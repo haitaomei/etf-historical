@@ -30,6 +30,8 @@ def refresh_sp500():
     response = requests.get(sp_500_url, headers=headers)
     response.raise_for_status()
     tables = pd.read_html(StringIO(response.text))
+
+    found_table = False
     for table in tables:
         if "Symbol" in table.columns:
             sp_500_constituents = table
@@ -48,6 +50,10 @@ def refresh_sp500():
             all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
             all_data.to_csv("sp500_historical_components.csv", index=False)
             print("sp500 data saved")
+            found_table = True
+            break
+
+    assert found_table, "sp500 data not found"
 
 
 def refresh_nasdaq100():
@@ -57,6 +63,8 @@ def refresh_nasdaq100():
     resp.raise_for_status()
 
     tables = pd.read_html(StringIO(resp.text))
+
+    found_table = False
     for table in tables:
         if "Ticker" in table.columns:
             nasdaq100_constituents = table
@@ -76,7 +84,10 @@ def refresh_nasdaq100():
 
             all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
             all_data.to_csv("nasdaq100_historical_components.csv", index=False)
-            print("Nasdaq100 data saved")
+            found_table = True
+            break
+
+    assert found_table, "Nasdaq100 data not found"
 
 
 def main():
