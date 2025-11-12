@@ -30,21 +30,24 @@ def refresh_sp500():
     response = requests.get(sp_500_url, headers=headers)
     response.raise_for_status()
     tables = pd.read_html(StringIO(response.text))
-    sp_500_constituents = tables[0]
+    for table in tables:
+        if "Symbol" in table.columns:
+            sp_500_constituents = table
 
-    sp_500_constituents = sp_500_constituents.rename(columns=str.lower)
-    sp_500_constituents = sp_500_constituents[["symbol"]]
-    sp_500_constituents["date"] = date.today()
-    sp_500_constituents.columns = ["ticker", "date"]
-    sp_500_constituents.sort_values(by="ticker", ascending=True, inplace=True)
+            sp_500_constituents = sp_500_constituents.rename(columns=str.lower)
+            sp_500_constituents = sp_500_constituents[["symbol"]]
+            sp_500_constituents["date"] = date.today()
+            sp_500_constituents.columns = ["ticker", "date"]
+            sp_500_constituents.sort_values(by="ticker", ascending=True, inplace=True)
 
-    df = create_constituents(sp_500_constituents)
+            df = create_constituents(sp_500_constituents)
 
-    sp500_hist = pd.read_csv("sp500_historical_components.csv")
-    all_data = pd.concat([sp500_hist, df], ignore_index=True)
+            sp500_hist = pd.read_csv("sp500_historical_components.csv")
+            all_data = pd.concat([sp500_hist, df], ignore_index=True)
 
-    all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
-    all_data.to_csv("sp500_historical_components.csv", index=False)
+            all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
+            all_data.to_csv("sp500_historical_components.csv", index=False)
+            print("sp500 data saved")
 
 
 def refresh_nasdaq100():
@@ -54,21 +57,26 @@ def refresh_nasdaq100():
     resp.raise_for_status()
 
     tables = pd.read_html(StringIO(resp.text))
-    nasdaq100_constituents = tables[4]
+    for table in tables:
+        if "Ticker" in table.columns:
+            nasdaq100_constituents = table
 
-    nasdaq100_constituents = nasdaq100_constituents.rename(columns=str.lower)
-    nasdaq100_constituents = nasdaq100_constituents[["ticker"]]
-    nasdaq100_constituents["date"] = date.today()
-    nasdaq100_constituents.columns = ["ticker", "date"]
-    nasdaq100_constituents.sort_values(by="ticker", ascending=True, inplace=True)
+            nasdaq100_constituents = nasdaq100_constituents.rename(columns=str.lower)
+            nasdaq100_constituents = nasdaq100_constituents[["ticker"]]
+            nasdaq100_constituents["date"] = date.today()
+            nasdaq100_constituents.columns = ["ticker", "date"]
+            nasdaq100_constituents.sort_values(
+                by="ticker", ascending=True, inplace=True
+            )
 
-    df = create_constituents(nasdaq100_constituents)
+            df = create_constituents(nasdaq100_constituents)
 
-    nasdaq100_hist = pd.read_csv("nasdaq100_historical_components.csv")
-    all_data = pd.concat([nasdaq100_hist, df], ignore_index=True)
+            nasdaq100_hist = pd.read_csv("nasdaq100_historical_components.csv")
+            all_data = pd.concat([nasdaq100_hist, df], ignore_index=True)
 
-    all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
-    all_data.to_csv("nasdaq100_historical_components.csv", index=False)
+            all_data = all_data.drop_duplicates(subset=["tickers"], keep="first")
+            all_data.to_csv("nasdaq100_historical_components.csv", index=False)
+            print("Nasdaq100 data saved")
 
 
 def main():
